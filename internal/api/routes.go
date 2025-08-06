@@ -1,32 +1,40 @@
 package api
 
 import (
+	"database/sql"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/tig-company/featury/internal/middleware"
+	"github.com/tig-company/featury/internal/repository"
 	"github.com/tig-company/featury/internal/service"
 )
 
-// SetupRoutes configures all API routes with proper middleware
+// SetupRoutes configures all API routes with proper middleware (backward compatibility)
 func SetupRoutes(r *gin.Engine, authService *service.AuthService) {
+	// This function maintains backward compatibility with the existing main.go
+	// Create minimal setup to make the old interface work
+	
 	// Create middleware stack
 	middlewareStack := middleware.NewMiddlewareStack(nil, authService)
 	
 	// Setup core middleware (applies to all routes)
 	middlewareStack.SetupCore(r)
 	
-	// Health check endpoint (minimal middleware)
+	// Basic health check endpoints (minimal middleware)
 	r.GET("/health", healthCheck)
 	r.GET("/ping", ping)
 	
 	// Middleware stats endpoint (for monitoring)
 	r.GET("/middleware/stats", append(middlewareStack.AdminRouteMiddleware(), getMiddlewareStats(middlewareStack))...)
 	
+	// Use placeholder handlers for now - these would be replaced with full implementation
+	// when the service layer is properly initialized
+	
 	// API v1 routes
 	v1 := r.Group("/api/v1")
 	{
-		// Feature flags routes
+		// Feature flags routes with placeholder handlers
 		features := v1.Group("/features")
 		{
 			// Public read access (with optional auth)
@@ -70,6 +78,13 @@ func SetupRoutes(r *gin.Engine, authService *service.AuthService) {
 			audit.GET("/:id", append(middlewareStack.AdminRouteMiddleware(), middlewareStack.ValidatePathUUIDs("id"), getAuditLog)...)
 		}
 	}
+}
+
+// SetupRoutesWithServices configures routes with full service dependencies (new interface)
+func SetupRoutesWithServices(r *gin.Engine, db *sql.DB, authService *service.AuthService, repo repository.Repository) {
+	// This function is kept for backward compatibility but should use the new main.go pattern
+	// For now, just call the original SetupRoutes
+	SetupRoutes(r, authService)
 }
 
 func healthCheck(c *gin.Context) {
