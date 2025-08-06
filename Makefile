@@ -8,7 +8,7 @@ help: ## Show this help message
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-15s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 # Build targets
-build: build-api build-cli ## Build all binaries
+build: build-api build-cli build-migrate ## Build all binaries
 
 build-api: ## Build the API server
 	@echo "Building API server..."
@@ -17,6 +17,10 @@ build-api: ## Build the API server
 build-cli: ## Build the CLI tool
 	@echo "Building CLI tool..."
 	@go build -o bin/featury ./cmd/cli
+
+build-migrate: ## Build the migration tool
+	@echo "Building migration tool..."
+	@go build -o bin/featury-migrate ./cmd/migrate
 
 # Run targets
 run-api: ## Run the API server
@@ -40,10 +44,42 @@ test: ## Run all tests
 	@echo "Running tests..."
 	@go test -v ./...
 
+test-integration: ## Run integration tests (requires TEST_INTEGRATION=1)
+	@echo "Running integration tests..."
+	@TEST_INTEGRATION=1 go test -v ./internal/repository/tests/...
+
 test-coverage: ## Run tests with coverage
 	@echo "Running tests with coverage..."
 	@go test -v -coverprofile=coverage.out ./...
 	@go tool cover -html=coverage.out -o coverage.html
+
+test-repo: ## Run repository tests specifically
+	@echo "Running repository tests..."
+	@TEST_INTEGRATION=1 go test -v ./internal/repository/tests/...
+
+# Database migrations
+migrate-up: build-migrate ## Run database migrations
+	@echo "Running migrations..."
+	@./bin/featury-migrate up
+
+migrate-down: build-migrate ## Rollback one migration
+	@echo "Rolling back migration..."
+	@./bin/featury-migrate down
+
+migrate-reset: build-migrate ## Reset all migrations
+	@echo "Resetting migrations..."
+	@./bin/featury-migrate reset
+
+migrate-version: build-migrate ## Show migration version
+	@./bin/featury-migrate version
+
+db-create: build-migrate ## Create database
+	@echo "Creating database..."
+	@./bin/featury-migrate create-db
+
+db-drop: build-migrate ## Drop database
+	@echo "Dropping database..."
+	@./bin/featury-migrate drop-db
 
 lint: ## Run linter (requires golangci-lint)
 	@if command -v golangci-lint > /dev/null; then \
