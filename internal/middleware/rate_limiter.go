@@ -9,7 +9,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/tig-company/featury/internal/auth"
 	"github.com/tig-company/featury/pkg/errors"
 )
 
