@@ -1,0 +1,41 @@
+# Featury Configuration Example
+# Copy this file to config.yaml and modify as needed
+
+# Database configuration
+database:
+  host: localhost
+  port: 5432
+  user: featury
+  password: featury
+  database: featury
+  sslmode: disable
+
+# API Server configuration
+server:
+  port: 8080
+  host: 0.0.0.0
+  read_timeout: 10s
+  write_timeout: 10s
+  idle_timeout: 120s
+
+# Logging configuration
+log:
+  level: info
+  format: json
+  
+# Authentication configuration (future)
+auth:
+  enabled: false
+  jwt_secret: your-secret-key
+  token_expiration: 24h
+
+# Features configuration
+features:
+  audit_logs_enabled: true
+  metrics_enabled: true
+  cache_enabled: false
+  
+# Cache configuration (future)
+cache:
+  type: memory
+  ttl: 5m
